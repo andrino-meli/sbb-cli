@@ -7,8 +7,7 @@
 * The programm is a single python file and can be installed with:
 ```bash
 cd ~/.local/bin/
-curl https://raw.githubusercontent.com/andrino-meli/sbb-cli/master/sbb-cli.py > 
-sbb
+curl https://raw.githubusercontent.com/andrino-meli/sbb-cli/master/sbb-cli.py > sbb
 chmod +x sbb
 pip3 install python-dateutil
 ```
