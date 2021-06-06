@@ -7,14 +7,16 @@ import json
 import urllib.parse
 import urllib.request
 import argparse
+from dateutil import parser as dateparser
+from datetime import datetime
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--from', help='Departure station', required=True)
 parser.add_argument('-t', '--to', help='Arrival station', required=True)
-parser.add_argument('-c', '--time', help='Departure time', required=False)
-#parser.add_argument('-v', '--via', help='Via station ', required=False)
-# TODO: add vias
-parser.add_argument('-d', '--detail', help='Verbose output', required=False)
+parser.add_argument('-c', '--time', help='Departure time and/or date', required=False)
+parser.add_argument('-a', '--arrival', help='Arrival time instead of departure. ', action='store_true', required=False)
+parser.add_argument('-v', '--via', help='Via station ',action='append', required=False)
+parser.add_argument('-d', '--detail', help='Verbose output of provided connection', required=False)
 args = vars(parser.parse_args())
 
 def request_json(url):
@@ -38,7 +40,13 @@ def request_json(url):
 station = {}
 station['from'] = str(args['from'])
 station['to'] = str(args['to'])
-#station['via1'] = str(args['via'].replace(' ','%20').encode('utf-8'))
+if 'via' in args and args['via'] != None:
+    l = args['via']
+    if len(l) > 5:
+        print("Error, only 5 via's allowed - ignoring additional ones")
+    for (v,i) in zip(l[:5],range(5)):
+        station['via'+str(i)] = v
+
 for s in station:
     url = 'http://transport.opendata.ch/v1/locations?query=' \
         + urllib.parse.quote(station[s]) \
@@ -55,20 +63,25 @@ for s in station:
     else:
         print('No station found corresponding to ' + station[s] + '!')
 
+
 # This paragraph gets the connection form the determined stations
-if args['detail']:
-    url = 'http://transport.opendata.ch/v1/connections?from=' \
-        + urllib.parse.quote(str(station['from'])) + '&to=' \
-        + urllib.parse.quote(str(station['to'])) + '&limit=6'
-else:
-    url = 'http://transport.opendata.ch/v1/connections?from=' \
-        + urllib.parse.quote(str(station['from'])) + '&to=' \
-        + urllib.parse.quote(str(station['to']))\
-        + '&fields[]=connections/from&fields[]=connections/to&fields[]=connections/duration&limit=6'
+## Build up request URL
+url = 'http://transport.opendata.ch/v1/connections?from=' \
+    + urllib.parse.quote(str(station['from'])) + '&to=' \
+    + urllib.parse.quote(str(station['to'])) + '&limit=6'
+if args['detail'] is None:
+    url += '&fields[]=connections/from&fields[]=connections/to&fields[]=connections/duration'
+if args['time'] is not None :
+    dtobj = dateparser.parse(str(args['time']))
+    url = url + '&time=' + dtobj.strftime('%H:%M') + '&date=' + dtobj.strftime('%Y-%m-%d')
+for i in range(5):
+    s = 'via' + str(i)
+    if s in station:
+        url = url + '&via[]=' + urllib.parse.quote(station[s])
+if args['arrival']:
+        url = url + '&isArrivalTime=1'
 
-if args['time']:
-    url = url + '&time=' + urllib.parse.quote_plus(str(args['time'].replace(' ','%20')))
-
+# Parse JSON request
 data = request_json(url)
 if data['connections']:
     index = 0
@@ -94,6 +107,4 @@ if data['connections']:
             print("Details not found!")
 
 else:
-    print("Not found!")
-
-
+    print("No connection found!")
