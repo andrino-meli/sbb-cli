@@ -6,11 +6,10 @@
 * Requires python3 (andy maybee some python packages with pip)
 * The programm is a single python file and can be installed with:
 ```bash
-    cd ~/.local/bin/
-    wget https://raw.githubusercontent.com/andrino-meli/sbb-cli/master/sbb-cli.py
-    chmod +x sbb-cli.py
-    ln -s sbb-cli.py sbb
-    pip3 install dateutil
+cd ~/.local/bin/
+wget https://raw.githubusercontent.com/andrino-meli/sbb-cli/master/sbb-cli.py > sbb
+chmod +x sbb
+pip3 install dateutil
 ```
 
 ## Example Queries
