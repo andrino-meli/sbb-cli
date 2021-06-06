@@ -9,7 +9,7 @@
 cd ~/.local/bin/
 wget https://raw.githubusercontent.com/andrino-meli/sbb-cli/master/sbb-cli.py > sbb
 chmod +x sbb
-pip3 install dateutil
+pip3 install python-dateutil
 ```
 
 ## Example Queries
